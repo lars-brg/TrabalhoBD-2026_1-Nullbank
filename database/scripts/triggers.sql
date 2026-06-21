@@ -8,7 +8,7 @@ AFTER INSERT ON funcionario
 FOR EACH ROW
 BEGIN
     UPDATE agencia
-    SET sal_total = IFNULL(sal_total, 0) + NEW.salario
+    SET sal_total = sal_total + NEW.salario
     WHERE num_ag = NEW.num_ag;
 END $$
 
@@ -17,7 +17,7 @@ AFTER DELETE ON funcionario
 FOR EACH ROW
 BEGIN
     UPDATE agencia
-    SET sal_total = IFNULL(sal_total, 0) - OLD.salario
+    SET sal_total = sal_total - OLD.salario
     WHERE num_ag = OLD.num_ag;
 END $$
 CREATE TRIGGER funcionario_atualizacao                     -- GATILHO DE ATUALIZAÇÃO (UPDATE)
@@ -25,10 +25,10 @@ AFTER UPDATE ON funcionario
 FOR EACH ROW
 BEGIN
     IF OLD.num_ag != NEW.num_ag THEN
-        UPDATE agencia SET sal_total = IFNULL(sal_total, 0) - OLD.salario WHERE num_ag = OLD.num_ag;
-        UPDATE agencia SET sal_total = IFNULL(sal_total, 0) + NEW.salario WHERE num_ag = NEW.num_ag;
+        UPDATE agencia SET sal_total = sal_total - OLD.salario WHERE num_ag = OLD.num_ag;
+        UPDATE agencia SET sal_total = sal_total + NEW.salario WHERE num_ag = NEW.num_ag;
     ELSE
-        UPDATE agencia SET sal_total = IFNULL(sal_total, 0) - OLD.salario + NEW.salario WHERE num_ag = NEW.num_ag;
+        UPDATE agencia SET sal_total = sal_total - OLD.salario + NEW.salario WHERE num_ag = NEW.num_ag;
     END IF;
 END $$
 CREATE TRIGGER trg_verificar_saldo                     -- GATILHO DE SALDO NEGATIVO NA CONTA
@@ -83,6 +83,40 @@ BEGIN
         SET MESSAGE_TEXT = 'Operação cancelada: O cliente já possui uma conta nesta agência.';
     END IF;
 END $$
+
+CREATE TRIGGER trg_uma_conta_por_agencia_update
+BEFORE UPDATE ON titularidade
+FOR EACH ROW
+BEGIN
+    DECLARE v_qtd INT;
+    DECLARE v_agencia INT;
+
+    SELECT num_ag
+    INTO v_agencia
+    FROM conta
+    WHERE num_conta = NEW.num_conta;
+
+    SELECT COUNT(*)
+    INTO v_qtd
+    FROM titularidade t
+    JOIN conta c
+        ON c.num_conta = t.num_conta
+    WHERE t.cpf_cliente = NEW.cpf_cliente
+      AND c.num_ag = v_agencia
+      AND NOT (
+            t.cpf_cliente = OLD.cpf_cliente
+        AND t.num_conta = OLD.num_conta
+      );
+
+    IF v_qtd > 0 THEN
+
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT =
+        'Cliente já possui conta nesta agência';
+
+    END IF;
+END $$
+
 DELIMITER ;
 
 -- ==========================================
@@ -113,7 +147,7 @@ BEGIN
     END IF;
 
     
-    IF NEW.tipo_transacao IN ('saque', 'pagamento', 'transferencia') THEN   -- Avalia se a transação for de saída de dinheiro
+    IF NEW.tipo_transacao IN ('saque', 'pagamento', 'transferencia', 'pix') THEN   -- Avalia se a transação for de saída de dinheiro
         
         
         IF (v_saldo_atual - NEW.valor) < (-v_limite) THEN                   -- Verifica se o saldo final vai estourar o limite negativo
@@ -123,13 +157,84 @@ BEGIN
         
     END IF;
 END $$
+
+CREATE TRIGGER trg_impede_saldo_negativo_update
+BEFORE UPDATE ON transacao
+FOR EACH ROW
+BEGIN
+
+    DECLARE v_saldo_atual DECIMAL(15,2);
+    DECLARE v_saldo_simulado DECIMAL(15,2);
+    DECLARE v_limite DECIMAL(15,2) DEFAULT 0;
+    DECLARE v_tipo_conta VARCHAR(30);
+
+    SELECT saldo, tipo_conta
+    INTO v_saldo_atual, v_tipo_conta
+    FROM conta
+    WHERE num_conta = NEW.num_conta;
+
+    IF v_tipo_conta = 'conta_especial' THEN
+
+        SELECT limite_credito
+        INTO v_limite
+        FROM conta_especial
+        WHERE num_conta = NEW.num_conta;
+
+        SET v_limite = IFNULL(v_limite,0);
+
+    END IF;
+
+    SET v_saldo_simulado = v_saldo_atual;
+
+    IF OLD.tipo_transacao IN
+       ('saque','pagamento','transferencia','pix')
+    THEN
+        SET v_saldo_simulado =
+            v_saldo_simulado + OLD.valor;
+    ELSE
+        SET v_saldo_simulado =
+            v_saldo_simulado - OLD.valor;
+    END IF;
+
+    IF NEW.tipo_transacao IN
+       ('saque','pagamento','transferencia','pix')
+    THEN
+        SET v_saldo_simulado =
+            v_saldo_simulado - NEW.valor;
+    ELSE
+        SET v_saldo_simulado =
+            v_saldo_simulado + NEW.valor;
+    END IF;
+
+    IF v_tipo_conta <> 'conta_especial'
+       AND v_saldo_simulado < 0
+    THEN
+
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT =
+        'Operação negada: saldo insuficiente.';
+
+    END IF;
+
+    IF v_tipo_conta = 'conta_especial'
+       AND v_saldo_simulado < -v_limite
+    THEN
+
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT =
+        'Operação negada: limite de crédito excedido.';
+
+    END IF;
+
+END $$
+
 DELIMITER ;
 
 -- ==========================================
 -- A atualização do saldo deve ser feita de forma automática refletindo o conjunto de transações.
 -- ==========================================
 DELIMITER $$
-CREATE TRIGGER atualiza_saldo                                                       -- GATILHO ATUALIZAÇÃO DE SALDO AUTOMÁTICO
+CREATE TRIGGER atualiza_saldo_insert                                                       -- GATILHO ATUALIZAÇÃO DE SALDO AUTOMÁTICO
 AFTER INSERT ON transacao
 FOR EACH ROW
 BEGIN
@@ -140,10 +245,75 @@ BEGIN
         WHERE num_conta = NEW.num_conta;
         
     
-    ELSEIF NEW.tipo_transacao IN ('saque', 'pagamento', 'transferencia', 'pix') THEN -- Se for SAÍDA de dinheiro, SUBTRAI do saldo
+    ELSEIF NEW.tipo_transacao IN ('saque', 'pagamento', 'pix', 'transferencia') THEN -- Se for SAÍDA de dinheiro, SUBTRAI do saldo
         UPDATE conta
         SET saldo = saldo - NEW.valor
         WHERE num_conta = NEW.num_conta;
     END IF;
 END $$
+DELIMITER ;
+
+-- ==========================================
+-- Update da transação
+-- ==========================================
+
+DELIMITER $$
+
+CREATE TRIGGER trg_update_transacao
+AFTER UPDATE ON transacao
+FOR EACH ROW
+BEGIN
+
+    UPDATE conta
+    SET saldo = saldo +
+    CASE
+        WHEN OLD.tipo_transacao IN 
+            ('saque','pagamento','transferencia', 'pix') THEN OLD.valor
+    ELSE -OLD.valor
+    END
+    +
+    CASE
+        WHEN NEW.tipo_transacao IN 
+            ('deposito','estorno') THEN NEW.valor
+        ELSE -NEW.valor
+    END
+    WHERE num_conta = NEW.num_conta;
+
+END $$
+
+CREATE TRIGGER trg_bloqueia_mudanca_conta
+BEFORE UPDATE ON transacao
+FOR EACH ROW
+BEGIN
+
+    IF OLD.num_conta <> NEW.num_conta THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT =
+        'Não é permitido alterar a conta de uma transação';
+    END IF;
+
+END $$
+
+DELIMITER ;
+
+-- ==========================================
+-- Quando houver remoção de alguma transação
+-- ==========================================
+
+DELIMITER $$
+CREATE TRIGGER trg_delete_transacao
+AFTER DELETE ON transacao
+FOR EACH ROW
+BEGIN
+    IF OLD.tipo_transacao IN ('deposito','estorno') THEN
+        UPDATE conta
+        SET saldo = saldo - OLD.valor
+        WHERE num_conta = OLD.num_conta;
+    ELSE
+        UPDATE conta
+        SET saldo = saldo + OLD.valor
+        WHERE num_conta = OLD.num_conta;
+    END IF;
+END $$
+
 DELIMITER ;
