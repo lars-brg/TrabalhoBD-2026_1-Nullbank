@@ -1,5 +1,5 @@
 ### -----------------------------------------
-### TESTES DO INCREMENTO: CLIENTES
+### TESTES DO INCREMENTO: CLIENTES (Atualizado)
 ### -----------------------------------------
 
 ### 1. Fazer Login para renovar o Token (Copie o novo token gerado)
@@ -11,22 +11,18 @@ Content-Type: application/json
   "senha": "Root"
 }
 
-### 2. Teste: Criar Cliente (Validando inserção e bcrypt)
+### 2. Teste: Criar Cliente (Validando inserção sem a senha)
 POST http://localhost:3000/api/clientes
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjE3MzkyNywiZXhwIjoxNzgyMjAyNzI3fQ.WSslILaps__TB-3A_zTUw5vtnC4555pZ4MISzWNXtOY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzMzM2OCwiZXhwIjoxNzgyMjYyMTY4fQ.qwIT-HQTIIYq_G4VbhRH06TGshHkNKMpKkDwjRI5lus
 
 {
-  "cpf": "65759023080",
+  "cpf": "02096959438",
   "nome_completo": "Maria Oliveira",
   "data_nascimento": "1985-10-20",
-  "senha": "senhaCliente123",
   "id_endereco": 999
 }
 
 ### 3. Teste: Listar Clientes (Validando o retorno dos dados)
 GET http://localhost:3000/api/clientes
-Authorization: Bearer COLE_SEU_TOKEN_AQUI
-###
-GET http://localhost:3000/api/agencias
-###
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzMzM2OCwiZXhwIjoxNzgyMjYyMTY4fQ.qwIT-HQTIIYq_G4VbhRH06TGshHkNKMpKkDwjRI5lus

@@ -1,20 +1,14 @@
 import { Request, Response } from "express";
-import bcrypt from "bcrypt";
 import * as ClienteModel from "../models/ClienteModel";
 
 export const criarCliente = async (req: Request, res: Response): Promise<any> => {
-  const { cpf, nome_completo, data_nascimento, senha, id_endereco } = req.body;
+  const { cpf, nome_completo, data_nascimento, id_endereco } = req.body;
 
   try {
-    // Transforma a senha em hash antes de salvar
-    const saltRounds = 10;
-    const senha_hash = await bcrypt.hash(senha, saltRounds);
-
     const novoCliente = {
       cpf,
       nome_completo,
       data_nascimento,
-      senha_hash,
       id_endereco
     };
 
