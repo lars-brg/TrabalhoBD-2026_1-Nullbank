@@ -1,6 +1,10 @@
--- ==========================================
--- View para listar os dados das contas de um gerente, com seus tipos, saldos e clientes 
--- ==========================================
+/* 
+==========================================
+    View para listar os dados das contas de um gerente, com seus tipos, saldos e clientes 
+
+    Questão número (4)
+==========================================
+*/ 
 
 CREATE VIEW vw_contas_gerente AS
 SELECT
@@ -23,9 +27,14 @@ ON t.num_conta = c.num_conta
 JOIN cliente cli
 ON cli.cpf = t.cpf_cliente;
 
--- ==========================================
--- View para listar, para cada conta, todos os dados das movimentações das mesmas (estilo extrato, podem ser na última semana (últimos 7 dias), no último mês (últimos 30 dias) e no último ano (últimos 365 dias);
--- ==========================================
+/* 
+==========================================
+    View para listar, para cada conta, todos os dados das movimentações das mesmas (estilo extrato, podem ser na última semana (últimos 7 dias),  
+    no último mês (últimos 30 dias) e no último ano (últimos 365 dias);
+
+    Questão número (5)
+==========================================
+*/
 
 CREATE VIEW vw_extrato_conta AS
 SELECT
@@ -40,9 +49,9 @@ FROM conta c
 JOIN transacao tr
 ON tr.num_conta = c.num_conta;
 
--- ==========================================
--- View de saldo consolidado por cliente
--- ==========================================
+/* ==========================================
+    View de saldo consolidado por cliente
+*/ ==========================================
 
 CREATE VIEW vw_saldo_cliente AS
 SELECT
