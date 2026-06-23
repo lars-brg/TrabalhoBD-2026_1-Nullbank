@@ -49,9 +49,11 @@ FROM conta c
 JOIN transacao tr
 ON tr.num_conta = c.num_conta;
 
-/* ==========================================
+/* 
+==========================================
     View de saldo consolidado por cliente
-*/ ==========================================
+==========================================
+*/
 
 CREATE VIEW vw_saldo_cliente AS
 SELECT
