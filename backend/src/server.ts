@@ -3,7 +3,7 @@ import express from "express";
 import authRoutes from "./routes/auth.routes";
 import funcionarioRoutes from "./routes/funcionario.routes";
 import clienteRoutes from "./routes/cliente.routes";
-
+import contaRoutes from "./routes/conta.routes";
 
 import cors from "cors";
 import dotenv from "dotenv";
@@ -23,7 +23,7 @@ app.use("/api", agenciaRoutes);         // Plugando as rotas (Todas terão o pre
 app.use("/api", authRoutes);
 app.use("/api", funcionarioRoutes);
 app.use("/api", clienteRoutes);
-
+app.use("/api", contaRoutes);
 
 app.get("/", (_, res) => {
   res.send("NullBank API está rodando");

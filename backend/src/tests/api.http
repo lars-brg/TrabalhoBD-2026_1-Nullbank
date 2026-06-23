@@ -11,18 +11,23 @@ Content-Type: application/json
   "senha": "Root"
 }
 
-### 2. Teste: Criar Cliente (Validando inserção sem a senha)
-POST http://localhost:3000/api/clientes
+### -----------------------------------------
+### TESTES DO INCREMENTO: CONTAS
+### -----------------------------------------
+
+### 1. Criar Conta Bancária
+POST http://localhost:3000/api/contas
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzMzM2OCwiZXhwIjoxNzgyMjYyMTY4fQ.qwIT-HQTIIYq_G4VbhRH06TGshHkNKMpKkDwjRI5lus
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzNDM3OCwiZXhwIjoxNzgyMjYzMTc4fQ.KFamXyI6xU6P6X9QsLHMukIPPZBd8QtVoZoV9kG3OKw
 
 {
-  "cpf": "02096959438",
-  "nome_completo": "Maria Oliveira",
-  "data_nascimento": "1985-10-20",
-  "id_endereco": 999
+  "num_ag": 5,
+  "matricula_gerente": 1,
+  "saldo": 500.00,
+  "senha": "senhaSeguraCartao",
+  "tipo_conta": "conta_corrente"
 }
 
-### 3. Teste: Listar Clientes (Validando o retorno dos dados)
-GET http://localhost:3000/api/clientes
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzMzM2OCwiZXhwIjoxNzgyMjYyMTY4fQ.qwIT-HQTIIYq_G4VbhRH06TGshHkNKMpKkDwjRI5lus
+### 2. Listar Contas
+GET http://localhost:3000/api/contas
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzNDM3OCwiZXhwIjoxNzgyMjYzMTc4fQ.KFamXyI6xU6P6X9QsLHMukIPPZBd8QtVoZoV9kG3OKw
