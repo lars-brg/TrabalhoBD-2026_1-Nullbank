@@ -6,7 +6,6 @@ export const criarFuncionario = async (req: Request, res: Response): Promise<any
   const { num_ag, nome_completo, senha, cargo, data_nascimento, salario } = req.body;
 
   try {
-    // Transforma a senha limpa em um hash complexo
     const saltRounds = 10;
     const senha_hash = await bcrypt.hash(senha, saltRounds);
 
