@@ -12,22 +12,44 @@ Content-Type: application/json
 }
 
 ### -----------------------------------------
-### TESTES DO INCREMENTO: CONTAS
+### TESTE DE FLUXO COMPLETO: NOVO CLIENTE + NOVA CONTA + TITULARIDADE
 ### -----------------------------------------
 
-### 1. Criar Conta Bancária
+### 1. Criar um NOVO Cliente (CPF diferente para não dar erro)
+POST http://localhost:3000/api/clientes
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzNjkwMSwiZXhwIjoxNzgyMjY1NzAxfQ.SXpgXoeNOQd3AOZHulTqFt9GImnjzcUYqQlotk9_OLg
+
+{
+  "cpf": "83731551551",
+  "nome_completo": "Carlos Souza",
+  "data_nascimento": "1990-05-15",
+  "id_endereco": 999
+}
+
+### 2. Criar uma NOVA Conta Bancária (Usando a agência 5 que funcionou)
 POST http://localhost:3000/api/contas
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzNDM3OCwiZXhwIjoxNzgyMjYzMTc4fQ.KFamXyI6xU6P6X9QsLHMukIPPZBd8QtVoZoV9kG3OKw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzNjkwMSwiZXhwIjoxNzgyMjY1NzAxfQ.SXpgXoeNOQd3AOZHulTqFt9GImnjzcUYqQlotk9_OLg
 
 {
   "num_ag": 5,
   "matricula_gerente": 1,
-  "saldo": 500.00,
-  "senha": "senhaSeguraCartao",
+  "saldo": 1200.00,
+  "senha": "senhaDoCarlos123",
   "tipo_conta": "conta_corrente"
 }
 
-### 2. Listar Contas
-GET http://localhost:3000/api/contas
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzNDM3OCwiZXhwIjoxNzgyMjYzMTc4fQ.KFamXyI6xU6P6X9QsLHMukIPPZBd8QtVoZoV9kG3OKw
+### 3. Vincular o Carlos à Nova Conta
+# IMPORTANTE: Como a tabela conta usa AUTO_INCREMENT, veja no seu banco 
+# qual foi o número gerado para essa nova conta (provavelmente será 2) 
+# e mude o "num_conta" abaixo antes de clicar.
+POST http://localhost:3000/api/titularidades
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzNjkwMSwiZXhwIjoxNzgyMjY1NzAxfQ.SXpgXoeNOQd3AOZHulTqFt9GImnjzcUYqQlotk9_OLg
+
+{
+  "num_conta": 55, 
+  "cpf_cliente": "83731551551",
+  "tipo_titular": "titular_1"
+}
