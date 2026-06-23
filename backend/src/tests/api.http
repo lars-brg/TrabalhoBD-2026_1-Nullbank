@@ -1,0 +1,32 @@
+### -----------------------------------------
+### TESTES DO INCREMENTO: CLIENTES
+### -----------------------------------------
+
+### 1. Fazer Login para renovar o Token (Copie o novo token gerado)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "identificador": "Admin",
+  "senha": "Root"
+}
+
+### 2. Teste: Criar Cliente (Validando inserção e bcrypt)
+POST http://localhost:3000/api/clientes
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjE3MzkyNywiZXhwIjoxNzgyMjAyNzI3fQ.WSslILaps__TB-3A_zTUw5vtnC4555pZ4MISzWNXtOY
+
+{
+  "cpf": "65759023080",
+  "nome_completo": "Maria Oliveira",
+  "data_nascimento": "1985-10-20",
+  "senha": "senhaCliente123",
+  "id_endereco": 999
+}
+
+### 3. Teste: Listar Clientes (Validando o retorno dos dados)
+GET http://localhost:3000/api/clientes
+Authorization: Bearer COLE_SEU_TOKEN_AQUI
+###
+GET http://localhost:3000/api/agencias
+###
