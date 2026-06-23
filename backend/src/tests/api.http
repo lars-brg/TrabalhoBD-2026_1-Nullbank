@@ -11,62 +11,41 @@ Content-Type: application/json
   "senha": "Root"
 }
 
+
 ### -----------------------------------------
-### TESTE DE FLUXO COMPLETO: NOVO CLIENTE + NOVA CONTA + TITULARIDADE
+### TESTES DO INCREMENTO: CADASTROS COMPLEMENTARES
 ### -----------------------------------------
 
-### 1. Criar um NOVO Cliente (CPF diferente para não dar erro)
-POST http://localhost:3000/api/clientes
+### 1. Vincular Telefone ao Cliente
+POST http://localhost:3000/api/clientes/telefone
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzNjkwMSwiZXhwIjoxNzgyMjY1NzAxfQ.SXpgXoeNOQd3AOZHulTqFt9GImnjzcUYqQlotk9_OLg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0MzIwNCwiZXhwIjoxNzgyMjcyMDA0fQ.i8-RH3Et9paav-TVnEFOOfL9SzzVpdIWSfNkdSTWuQs
 
 {
-  "cpf": "83731551551",
-  "nome_completo": "Carlos Souza",
-  "data_nascimento": "1990-05-15",
-  "id_endereco": 999
+  "cpf_cliente": "02096959438",
+  "numero": "88999991111",
+  "descricao": "Celular Principal"
 }
 
-### 2. Criar uma NOVA Conta Bancária (Usando a agência 5 que funcionou)
-POST http://localhost:3000/api/contas
+### 2. Vincular Email ao Cliente
+POST http://localhost:3000/api/clientes/email
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzNjkwMSwiZXhwIjoxNzgyMjY1NzAxfQ.SXpgXoeNOQd3AOZHulTqFt9GImnjzcUYqQlotk9_OLg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0MzIwNCwiZXhwIjoxNzgyMjcyMDA0fQ.i8-RH3Et9paav-TVnEFOOfL9SzzVpdIWSfNkdSTWuQs
 
 {
-  "num_ag": 5,
-  "matricula_gerente": 1,
-  "saldo": 1200.00,
-  "senha": "senhaDoCarlos123",
-  "tipo_conta": "conta_corrente"
+  "cpf_cliente": "02096959438",
+  "endereco_email": "maria.oliveira@email.com",
+  "descricao": "Pessoal"
 }
 
-### 3. Vincular o Carlos à Nova Conta
-# IMPORTANTE: Como a tabela conta usa AUTO_INCREMENT, veja no seu banco 
-# qual foi o número gerado para essa nova conta (provavelmente será 2) 
-# e mude o "num_conta" abaixo antes de clicar.
-POST http://localhost:3000/api/titularidades
+### 3. Vincular Dependente ao Funcionário
+POST http://localhost:3000/api/funcionarios/dependente
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjIzNjkwMSwiZXhwIjoxNzgyMjY1NzAxfQ.SXpgXoeNOQd3AOZHulTqFt9GImnjzcUYqQlotk9_OLg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0MzIwNCwiZXhwIjoxNzgyMjcyMDA0fQ.i8-RH3Et9paav-TVnEFOOfL9SzzVpdIWSfNkdSTWuQs
 
 {
-  "num_conta": 55, 
-  "cpf_cliente": "83731551551",
-  "tipo_titular": "titular_1"
-}
-
-### -----------------------------------------
-### TESTES DO INCREMENTO: ESPECIALIZAÇÃO DE CONTA
-### -----------------------------------------
-
-### 1. Finalizar a Conta 55 como Conta Corrente
-POST http://localhost:3000/api/contas/especializacao
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0MjMxNSwiZXhwIjoxNzgyMjcxMTE1fQ.nGoxxg0NJesESy0EFVx8_Aeh68RiknaTfuoWjUTQzg0
-
-{
-  "num_conta": 55,
-  "tipo_conta": "conta_corrente",
-  "dados_especificos": {
-    "data_aniversario_contrato": "2026-06-23"
-  }
+  "matricula_func": 1,
+  "nome_completo": "Pedro Oliveira Ramos",
+  "parentesco": "filho_a",
+  "data_nascimento": "2018-08-25"
 }
