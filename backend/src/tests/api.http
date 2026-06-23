@@ -53,3 +53,20 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwic
   "cpf_cliente": "83731551551",
   "tipo_titular": "titular_1"
 }
+
+### -----------------------------------------
+### TESTES DO INCREMENTO: ESPECIALIZAÇÃO DE CONTA
+### -----------------------------------------
+
+### 1. Finalizar a Conta 55 como Conta Corrente
+POST http://localhost:3000/api/contas/especializacao
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0MjMxNSwiZXhwIjoxNzgyMjcxMTE1fQ.nGoxxg0NJesESy0EFVx8_Aeh68RiknaTfuoWjUTQzg0
+
+{
+  "num_conta": 55,
+  "tipo_conta": "conta_corrente",
+  "dados_especificos": {
+    "data_aniversario_contrato": "2026-06-23"
+  }
+}
