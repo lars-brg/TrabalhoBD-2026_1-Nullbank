@@ -2,34 +2,50 @@ import { Router } from "express";
 import { login } from "../controllers/AuthController";
 
 const router = Router();
+
 /**
  * @swagger
- * /agencias:
- *   get:
- *     summary: Lista todas as agências do banco
- *     tags: [Agências]
+ * /auth/login:
+ *   post:
+ *     summary: Autentica um usuário (Admin, Funcionário ou Cliente)
+ *     tags:
+ *       - Autenticação
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               identificador:
+ *                 type: string
+ *                 example: Admin
+ *               senha:
+ *                 type: string
+ *                 example: Root
+ *             required:
+ *               - identificador
+ *               - senha
  *     responses:
  *       200:
- *         description: Sucesso. Retorna um array de agências.
+ *         description: Login bem-sucedido.
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   num_ag:
- *                     type: integer
- *                     example: 1
- *                   nome_ag:
- *                     type: string
- *                     example: Agência Central
- *                   cidade:
- *                     type: string
- *                     example: Sobral
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                 role:
+ *                   type: string
+ *                   example: admin
+ *       401:
+ *         description: Credenciais inválidas.
  *       500:
- *         description: Erro interno do servidor.
+ *         description: Erro interno no servidor.
  */
+
 router.post("/auth/login", login);
 
 export default router;

@@ -16,6 +16,15 @@ const options = {
         description: "Servidor de Desenvolvimento",
       },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
   },
   // Aqui dizemos onde o Swagger deve procurar pelos comentários das rotas
   apis: ["./src/routes/*.ts"], 

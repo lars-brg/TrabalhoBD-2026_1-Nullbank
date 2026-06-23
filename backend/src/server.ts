@@ -4,10 +4,10 @@ import authRoutes from "./routes/auth.routes";
 import funcionarioRoutes from "./routes/funcionario.routes";
 import clienteRoutes from "./routes/cliente.routes";
 import contaRoutes from "./routes/conta.routes";
+import agenciaRoutes from "./routes/agencia.routes";
 
 import cors from "cors";
 import dotenv from "dotenv";
-import agenciaRoutes from "./routes/agencia.routes";
 import { setupSwagger } from "./config/swagger";
 
 
