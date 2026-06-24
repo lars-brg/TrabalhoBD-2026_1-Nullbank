@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { criarConta, getContas } from "../controllers/ContaController";
-import { verificarToken, verificarAdmin } from "../middlewares/authMiddleware";
+import { verificarToken, verificarPerfil } from "../middlewares/authMiddleware";
 
 const router = Router();
 
@@ -8,7 +8,7 @@ const router = Router();
  * @swagger
  * /contas:
  *   get:
- *     summary: Lista todas as contas bancárias (Acesso Admin)
+ *     summary: Lista todas as contas bancárias (Acesso Gerente, Atendente, Caixa)
  *     tags:
  *       - Contas
  *     security:
@@ -17,12 +17,12 @@ const router = Router();
  *       200:
  *         description: Lista de contas retornada com sucesso.
  *       401:
- *         description: Acesso negado.
+ *         description: Acesso negado. Token não fornecido ou inválido.
  *       403:
- *         description: Acesso restrito para Administradores.
+ *         description: Acesso restrito aos perfis autorizados.
  *
  *   post:
- *     summary: Cria uma nova conta bancária (Acesso Admin)
+ *     summary: Cria uma nova conta bancária (Acesso Gerente)
  *     tags:
  *       - Contas
  *     security:
@@ -36,7 +36,7 @@ const router = Router();
  *             properties:
  *               num_ag:
  *                 type: integer
- *                 example: 999
+ *                 example: 5
  *               matricula_gerente:
  *                 type: integer
  *                 example: 1
@@ -60,14 +60,17 @@ const router = Router();
  *       201:
  *         description: Conta criada com sucesso.
  *       401:
- *         description: Acesso negado.
+ *         description: Acesso negado. Token não fornecido ou inválido.
  *       403:
- *         description: Acesso restrito para Administradores.
+ *         description: Acesso restrito. Apenas Gerentes podem realizar esta ação.
  *       500:
  *         description: Erro interno do servidor.
  */
 
-router.get("/contas", verificarToken, verificarAdmin, getContas);
-router.post("/contas", verificarToken, verificarAdmin, criarConta);
+// GET: Atendentes e Gerentes podem consultar os dados (e Caixas também, por lógica bancária)
+router.get("/contas", verificarToken, verificarPerfil(['gerente', 'atendente', 'caixa']), getContas);
+
+// POST: Apenas o Gerente pode ABRIR contas
+router.post("/contas", verificarToken, verificarPerfil(['gerente']), criarConta);
 
 export default router;

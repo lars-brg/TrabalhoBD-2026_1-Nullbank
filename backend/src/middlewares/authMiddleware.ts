@@ -44,3 +44,34 @@ export const verificarAdmin = (req: AuthRequest, res: Response, next: NextFuncti
     res.status(403).json({ erro: "Acesso restrito. Apenas Administradores (DBA) podem realizar esta ação." });
   }
 };
+
+
+/**
+ * Middleware para verificar se o cargo do funcionário logado tem permissão.
+ * @param perfisPermitidos Array com os cargos que podem acessar a rota.
+ */
+export const verificarPerfil = (perfisPermitidos: string[]) => {
+  return (req: Request, res: Response, next: NextFunction): any => {
+    // O verificarToken anterior deve ter salvo os dados decodificados do JWT aqui
+    const usuario = (req as any).usuario;
+
+    if (!usuario) {
+      return res.status(401).json({ erro: "Usuário não autenticado no sistema." });
+    }
+
+    // Acesso VIP: O Admin mestre sempre passa direto
+    if (usuario.identificador === "Admin") {
+      return next();
+    }
+
+    // Se o usuário não tem cargo (ex: é um cliente logado) ou o cargo não está na lista
+    if (!usuario.cargo || !perfisPermitidos.includes(usuario.cargo)) {
+      return res.status(403).json({ 
+        erro: `Acesso negado (403 Forbidden). Esta ação requer um dos seguintes perfis: ${perfisPermitidos.join(", ")}. Seu perfil atual não tem autorização.` 
+      });
+    }
+
+    // Se o cargo está na lista, pode passar!
+    next();
+  };
+};
