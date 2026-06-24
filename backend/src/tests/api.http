@@ -11,41 +11,90 @@ Content-Type: application/json
   "senha": "Root"
 }
 
+### -----------------------------------------
+### TESTES DE PERFIL DE ACESSO (ATENDENTE)
+### -----------------------------------------
+
+### 1. Criar o Funcionario ATENDENTE (Requer Token ADMIN)
+# Ajuste os campos se a sua tabela de funcionário exigir dados diferentes
+POST http://localhost:3000/api/funcionarios
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0NTYyNiwiZXhwIjoxNzgyMjc0NDI2fQ.WV9vf3tuyqFtrpRyJbZshPBnhUNvUWYGfXRni6USOtU
+
+{
+  "cpf": "45644561305",
+  "nome_completo": "Lucas Atendente",
+  "cargo": "atendente",
+  "senha": "senhaAtendente123",
+  "salario": 2500.00,
+  "data_nascimento": "1998-02-10",
+  "data_admissao": "2026-06-23",
+  "id_endereco": 999,
+  "num_ag": 5
+}
+
+### 2. Fazer Login como ATENDENTE para pegar o Token dele
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "identificador": "30",
+  "senha": "senhaAtendente123"
+}
+
+### 3. O Teste de Bloqueio: Atendente tentando ABRIR uma Conta
+# Copie o token que foi gerado no Passo 2 e cole aqui.
+# O resultado OBRIGATÓRIO deve ser o Erro 403 Forbidden.
+POST http://localhost:3000/api/contas
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjozMCwiY2FyZ28iOiJhdGVuZGVudGUiLCJpYXQiOjE3ODIyNjAzNTgsImV4cCI6MTc4MjI4OTE1OH0.hvP1QMlQ0QbjQ4wBdmzaPiHolY2jx1YjiZ7JaNzH0a4
+
+{
+  "num_ag": 5,
+  "matricula_gerente": 1,
+  "saldo": 100.00,
+  "senha": "senhaInvasao456",
+  "tipo_conta": "conta_corrente"
+}
 
 ### -----------------------------------------
-### TESTES DO INCREMENTO: CADASTROS COMPLEMENTARES
+### TESTES COMPLEMENTARES DE PERFIL (RBAC)
 ### -----------------------------------------
 
-### 1. Vincular Telefone ao Cliente
-POST http://localhost:3000/api/clientes/telefone
+### 4. Teste da Rota Compartilhada: Atendente Listando Contas
+# Use o MESMO token do Lucas (Atendente) que deu erro 403 no teste anterior.
+# O resultado esperado é 200 OK e a lista de contas na tela!
+GET http://localhost:3000/api/contas
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjozMCwiY2FyZ28iOiJhdGVuZGVudGUiLCJpYXQiOjE3ODIyNjAzNTgsImV4cCI6MTc4MjI4OTE1OH0.hvP1QMlQ0QbjQ4wBdmzaPiHolY2jx1YjiZ7JaNzH0a4
+###
+POST http://localhost:3000/api/contas
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0MzIwNCwiZXhwIjoxNzgyMjcyMDA0fQ.i8-RH3Et9paav-TVnEFOOfL9SzzVpdIWSfNkdSTWuQs
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjoiQWRtaW4iLCJjYXJnbyI6IkRCQSIsImlhdCI6MTc4MjI2MjU3MywiZXhwIjoxNzgyMjkxMzczfQ.O9i67dbF80Kz0IzL8Jkid9-7qy3szmYPBvwngmXazkc
 
 {
-  "cpf_cliente": "02096959438",
-  "numero": "88999991111",
-  "descricao": "Celular Principal"
+  "num_ag": 5,
+  "matricula_gerente": 1,
+  "saldo": 200.00,
+  "senha": "senhaTemp123",
+  "tipo_conta": "conta_corrente"
 }
+### -----------------------------------------
+### TESTES DE MANUTENÇÃO (PUT / DELETE)
+### -----------------------------------------
 
-### 2. Vincular Email ao Cliente
-POST http://localhost:3000/api/clientes/email
+### 1. Atualizar uma Conta Existente (Requer Token do Gerente)
+# Troque o "55" pelo número de uma conta que você já criou!
+PUT http://localhost:3000/api/contas/56
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0MzIwNCwiZXhwIjoxNzgyMjcyMDA0fQ.i8-RH3Et9paav-TVnEFOOfL9SzzVpdIWSfNkdSTWuQs
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjoiQWRtaW4iLCJjYXJnbyI6IkRCQSIsImlhdCI6MTc4MjI2MjgwNywiZXhwIjoxNzgyMjkxNjA3fQ.w_3YKxzUmR189-H-bj8tpfyErQMaQ1CtCqlD27SDL0M
 
 {
-  "cpf_cliente": "02096959438",
-  "endereco_email": "maria.oliveira@email.com",
-  "descricao": "Pessoal"
+  "matricula_gerente": 1,
+  "tipo_conta": "poupanca"
 }
 
-### 3. Vincular Dependente ao Funcionário
-POST http://localhost:3000/api/funcionarios/dependente
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0MzIwNCwiZXhwIjoxNzgyMjcyMDA0fQ.i8-RH3Et9paav-TVnEFOOfL9SzzVpdIWSfNkdSTWuQs
-
-{
-  "matricula_func": 1,
-  "nome_completo": "Pedro Oliveira Ramos",
-  "parentesco": "filho_a",
-  "data_nascimento": "2018-08-25"
-}
+### 2. Tentar Deletar uma Conta (Requer Token do Gerente)
+# Dica: Crie uma conta nova rapidinho só para testar o delete, 
+# para não apagar as contas que já configuramos com titularidade!
+DELETE http://localhost:3000/api/contas/56
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjoiQWRtaW4iLCJjYXJnbyI6IkRCQSIsImlhdCI6MTc4MjI2MjQ3NCwiZXhwIjoxNzgyMjkxMjc0fQ.CeOHBQ6Esk5sPUIuNvh1MfOAT6FEDB74wYlzxki-H70
