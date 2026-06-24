@@ -29,7 +29,7 @@ NullBank_BD/
 │   │   ├── create.sql      # Criação das tabelas e restrições (DDL)
 │   │   ├── populate.sql    # Script de povoamento (Dados Iniciais)
 │   │   ├── triggers.sql    # Gatilhos de automação
-|   |   ├── queries         # Consultas requeridas no documento
+|   |   ├── queries         # Consultas requeridas no documento de requisitos.
 │   │   └── views.sql       # Visões de relatórios
 │   └── Consultas.sql       # Arquivo unificado para avaliação
 ├── docs/                   # Documentação em PDF (Especificações)
@@ -57,7 +57,6 @@ Este arquivo é fundamental para o teste do sistema, populando o banco de dados 
 *   Múltiplas agências e funcionários com cargos definidos e salários base que respeitam o mínimo de **R$ 2.286,00**.
 *   Clientes com cadastros completos, incluindo endereços, telefones, e-mails e diferentes modalidades de contas: **Corrente, Poupança e Especial**.
 *   Um histórico detalhado de transações utilizado para validar as regras de negócio automáticas de saldo e limites de crédito.
-
 
 
 ## 📐 Modelagem do Banco de Dados (.mwb)
