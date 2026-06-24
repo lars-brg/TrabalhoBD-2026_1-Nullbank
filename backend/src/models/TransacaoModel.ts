@@ -1,52 +1,32 @@
 import pool from "../config/database";
 
 export const realizarTransferencia = async (num_conta_origem: number, num_conta_destino: number, valor: number) => {
-  // Em vez de pool.query direto, pegamos uma conexão dedicada para a transação
   const connection = await pool.getConnection();
   
   try {
-    // Inicia a transação ACID
     await connection.beginTransaction();
 
-    // 1. Checar saldo e bloquear a linha da origem (FOR UPDATE)
-    const [linhasOrigem]: any = await connection.query(
-      "SELECT saldo FROM conta WHERE num_conta = ? FOR UPDATE",
-      [num_conta_origem]
-    );
-
-    if (linhasOrigem.length === 0) throw new Error("Conta de origem não encontrada.");
-    if (Number(linhasOrigem[0].saldo) < valor) throw new Error("Saldo insuficiente para transferência.");
-
-    // 2. Checar se o destino existe e bloquear a linha (FOR UPDATE)
-    const [linhasDestino]: any = await connection.query(
-      "SELECT num_conta FROM conta WHERE num_conta = ? FOR UPDATE",
-      [num_conta_destino]
-    );
-    
-    if (linhasDestino.length === 0) throw new Error("Conta de destino não encontrada.");
-
-    // 3. Debitar da Origem
+    // O gatilho 'trg_impede_saldo_negativo' vai checar se tem saldo antes de deixar isso acontecer.
     await connection.query(
-      "UPDATE conta SET saldo = saldo - ? WHERE num_conta = ?",
-      [valor, num_conta_origem]
+      "INSERT INTO transacao (num_conta, tipo_transacao, valor, data_hora) VALUES (?, 'transferencia', ?, NOW())",
+      [num_conta_origem, valor]
     );
 
-    // 4. Creditar no Destino
+    // O gatilho verá 'deposito' e fará a ADIÇÃO no saldo da conta destino.
     await connection.query(
-      "UPDATE conta SET saldo = saldo + ? WHERE num_conta = ?",
-      [valor, num_conta_destino]
+      "INSERT INTO transacao (num_conta, tipo_transacao, valor, data_hora) VALUES (?, 'deposito', ?, NOW())",
+      [num_conta_destino, valor]
     );
 
-    // Se chegou até aqui sem erros, confirma as alterações no banco!
+    // Se o banco de dados aceitou tudo sem disparar erros, confirmamos!
     await connection.commit();
     return { sucesso: true };
 
   } catch (error) {
-    // Se deu QUALQUER erro (ex: saldo insuficiente), desfaz tudo imediatamente!
+    // Se o MySQL gritar que não tem saldo (via Trigger), ele cai aqui e desfaz tudo!
     await connection.rollback();
     throw error;
   } finally {
-    // Libera a conexão de volta para o pool
     connection.release();
   }
 };
