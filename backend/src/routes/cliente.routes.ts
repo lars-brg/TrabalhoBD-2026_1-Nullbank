@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { criarCliente, getClientes } from "../controllers/ClienteController";
-import { verificarToken, verificarAdmin, verificarPerfil } from "../middlewares/authMiddleware";
+import { verificarToken, verificarPerfil } from "../middlewares/authMiddleware";
 
 const router = Router();
 /**

@@ -4,7 +4,7 @@ import {
   adicionarEmail,
   adicionarDependente
 } from "../controllers/CadastroComplementarController";
-import { verificarToken, verificarAdmin, verificarPerfil } from "../middlewares/authMiddleware";
+import { verificarToken, verificarPerfil } from "../middlewares/authMiddleware";
 
 const router = Router();
 
