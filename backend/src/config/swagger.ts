@@ -26,13 +26,18 @@ const options = {
       },
     },
   },
-  // Aqui dizemos onde o Swagger deve procurar pelos comentários das rotas
-  apis: ["./src/routes/*.ts"], 
+  apis: ["./src/routes/*.ts"],
 };
 
 const swaggerSpec = swaggerJSDoc(options);
 
 export const setupSwagger = (app: Express) => {
-  // Cria a rota /api-docs que vai hospedar a interface gráfica
+  // Interface visual do Swagger
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+  // JSON OpenAPI para importar no Postman
+  app.get("/api-docs.json", (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.send(swaggerSpec);
+  });
 };
