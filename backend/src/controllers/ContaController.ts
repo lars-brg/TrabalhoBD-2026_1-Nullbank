@@ -35,3 +35,40 @@ export const getContas = async (req: Request, res: Response): Promise<any> => {
     return res.status(500).json({ erro: "Erro interno ao buscar contas." });
   }
 };
+
+
+export const editarConta = async (req: Request, res: Response): Promise<any> => {
+const num_conta = parseInt(req.params.id as string);  
+  try {
+    const resultado: any = await ContaModel.atualizarConta(num_conta, req.body);
+    
+    if (resultado.affectedRows === 0) {
+      return res.status(404).json({ erro: "Conta não encontrada para atualização." });
+    }
+    
+    return res.status(200).json({ mensagem: "Dados da conta atualizados com sucesso!" });
+  } catch (error) {
+    console.error("Erro ao atualizar conta:", error);
+    return res.status(500).json({ erro: "Erro interno ao atualizar a conta." });
+  }
+};
+
+export const removerConta = async (req: Request, res: Response): Promise<any> => {
+const num_conta = parseInt(req.params.id as string);  
+  try {
+    const resultado: any = await ContaModel.deletarConta(num_conta);
+    
+    if (resultado.affectedRows === 0) {
+      return res.status(404).json({ erro: "Conta não encontrada para remoção." });
+    }
+    
+    return res.status(200).json({ mensagem: "Conta encerrada e removida com sucesso!" });
+  } catch (error: any) {
+    console.error("Erro ao remover conta:", error);
+    // Erro de Chave Estrangeira (ex: tentar apagar conta que tem movimentações)
+    if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(400).json({ erro: "Não é possível remover esta conta pois ela possui dependências (titulares, especializações ou transações)." });
+    }
+    return res.status(500).json({ erro: "Erro interno ao remover a conta." });
+  }
+};

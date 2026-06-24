@@ -16,3 +16,23 @@ export const listarTodas = async () => {
   const [rows] = await pool.query("SELECT num_conta, num_ag, matricula_gerente, saldo, tipo_conta FROM conta");
   return rows;
 };
+
+export const atualizarConta = async (num_conta: number, dados: any) => {
+  // Tiramos a 'senha' da desestruturação
+  const { matricula_gerente, tipo_conta } = dados; 
+  
+  const [result] = await pool.query(
+    // Tiramos a 'senha = ?' da query SQL e deixamos só os dados administrativos
+    "UPDATE conta SET matricula_gerente = ?, tipo_conta = ? WHERE num_conta = ?",
+    [matricula_gerente, tipo_conta, num_conta]
+  );
+  return result;
+};
+
+export const deletarConta = async (num_conta: number) => {
+  const [result] = await pool.query(
+    "DELETE FROM conta WHERE num_conta = ?",
+    [num_conta]
+  );
+  return result;
+};
