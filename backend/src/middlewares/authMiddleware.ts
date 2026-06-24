@@ -34,22 +34,11 @@ export const verificarToken = (req: AuthRequest, res: Response, next: NextFuncti
   
 };
 
-// Esse middleware só roda DEPOIS do verificarToken
-export const verificarAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  // Lembra que no login do Admin nós colocamos { role: "DBA" } no token?
-  if (req.usuario && req.usuario.role === "DBA") {
-    next();
-  } else {
-    // Erro 403 (Forbidden): Você até é do banco, mas não tem permissão para isso.
-    res.status(403).json({ erro: "Acesso restrito. Apenas Administradores (DBA) podem realizar esta ação." });
-  }
-};
-
-
 /**
  * Middleware para verificar se o cargo do funcionário logado tem permissão.
  * @param perfisPermitidos Array com os cargos que podem acessar a rota.
  */
+
 export const verificarPerfil = (perfisPermitidos: string[]) => {
   return (req: Request, res: Response, next: NextFunction): any => {
     // O verificarToken anterior deve ter salvo os dados decodificados do JWT aqui

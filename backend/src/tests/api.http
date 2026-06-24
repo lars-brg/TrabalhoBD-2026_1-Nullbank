@@ -98,3 +98,45 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yI
 # para não apagar as contas que já configuramos com titularidade!
 DELETE http://localhost:3000/api/contas/56
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjoiQWRtaW4iLCJjYXJnbyI6IkRCQSIsImlhdCI6MTc4MjI2MjQ3NCwiZXhwIjoxNzgyMjkxMjc0fQ.CeOHBQ6Esk5sPUIuNvh1MfOAT6FEDB74wYlzxki-H70
+
+### -----------------------------------------
+### TESTES DO ITEM 8: TRANSAÇÃO ACID
+### -----------------------------------------
+
+### 1. Criar o Funcionario CAIXA (Requer Token ADMIN)
+POST http://localhost:3000/api/funcionarios
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjoiQWRtaW4iLCJjYXJnbyI6IkRCQSIsImlhdCI6MTc4MjI2NDEwOSwiZXhwIjoxNzgyMjkyOTA5fQ.4cxN2ZISNXx9Tv4SIwh0MjM3hL85SEUiIzZ1Fh50mK0
+
+{
+  "cpf": "11122233344",
+  "nome_completo": "Carlos Caixa",
+  "cargo": "caixa",
+  "senha": "senhaCaixa123",
+  "salario": 3000.00,
+  "data_nascimento": "1995-05-20",
+  "data_admissao": "2026-06-23",
+  "id_endereco": 999,
+  "num_ag": 5
+}
+
+### 2. Fazer Login como CAIXA (Anote a matrícula gerada no passo anterior, ex: 31)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "identificador": "31",
+  "senha": "senhaCaixa123"
+}
+
+### 3. Executar a Transferência (Requer Token do CAIXA)
+# Verifique no banco de dados duas contas válidas para substituir os IDs 55 e 57
+POST http://localhost:3000/api/transacoes/transferencia
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjozMSwiY2FyZ28iOiJjYWl4YSIsImlhdCI6MTc4MjI2NDE4NiwiZXhwIjoxNzgyMjkyOTg2fQ._t99L9X8YkOD3Sp3hX4RfhbipPcTyNzjYfx8qReemSU
+
+{
+  "num_conta_origem": 55,
+  "num_conta_destino": 52,
+  "valor": 50.00
+}

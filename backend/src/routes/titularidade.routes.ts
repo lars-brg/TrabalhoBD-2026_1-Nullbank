@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { vincularTitular } from "../controllers/TitularidadeController";
-import { verificarToken, verificarAdmin } from "../middlewares/authMiddleware";
+import { verificarToken, verificarPerfil } from "../middlewares/authMiddleware";
 
 const router = Router();
 
@@ -49,6 +49,6 @@ const router = Router();
  *         description: Erro interno do servidor.
  */
 
-router.post("/titularidades", verificarToken, verificarAdmin, vincularTitular);
+router.post("/titularidades", verificarToken, verificarPerfil(['gerente']), vincularTitular);
 
 export default router;
