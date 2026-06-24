@@ -163,6 +163,12 @@ Inicie o servidor em modo de desenvolvimento utilizando o script configurado no 
 npm run dev
 ```
 
+ou,
+
+```
+npx ts-node-dev src/server.ts
+```
+
 O sistema deve confirmar a inicialização, operando geralmente na porta 3000.
 
 ### 5. Acesso à Documentação (Swagger)
