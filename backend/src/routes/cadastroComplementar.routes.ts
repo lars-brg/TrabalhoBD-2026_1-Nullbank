@@ -4,7 +4,7 @@ import {
   adicionarEmail,
   adicionarDependente
 } from "../controllers/CadastroComplementarController";
-import { verificarToken, verificarAdmin } from "../middlewares/authMiddleware";
+import { verificarToken, verificarPerfil } from "../middlewares/authMiddleware";
 
 const router = Router();
 
@@ -64,7 +64,7 @@ const router = Router();
 router.post(
   "/clientes/telefone",
   verificarToken,
-  verificarAdmin,
+  verificarPerfil(['gerente']),
   adicionarTelefone
 );
 /**
@@ -122,7 +122,7 @@ router.post(
 router.post(
   "/clientes/email",
   verificarToken,
-  verificarAdmin,
+  verificarPerfil(['gerente']),
   adicionarEmail
 );
 /**
@@ -191,7 +191,7 @@ router.post(
 router.post(
   "/funcionarios/dependente",
   verificarToken,
-  verificarAdmin,
+  verificarPerfil(['gerente']),
   adicionarDependente
 );
 

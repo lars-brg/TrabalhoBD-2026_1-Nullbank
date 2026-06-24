@@ -45,5 +45,6 @@
     // Adicionado para usar import
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "ignoreDeprecations": "6.0"
   }
 }

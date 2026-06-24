@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { criarCliente, getClientes } from "../controllers/ClienteController";
-import { verificarToken, verificarAdmin } from "../middlewares/authMiddleware";
+import { verificarToken, verificarPerfil } from "../middlewares/authMiddleware";
 
 const router = Router();
 /**
@@ -107,7 +107,7 @@ const router = Router();
  *         description: Erro interno do servidor.
  */
 
-router.get("/clientes", verificarToken, verificarAdmin, getClientes);
-router.post("/clientes", verificarToken, verificarAdmin, criarCliente);
+router.get("/clientes", verificarToken, verificarPerfil(['gerente']), getClientes);
+router.post("/clientes", verificarToken, verificarPerfil(['gerente']), criarCliente);
 
 export default router;

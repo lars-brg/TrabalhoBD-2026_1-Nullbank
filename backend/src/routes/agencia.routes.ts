@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getAgencias } from "../controllers/AgenciaController";
+import { verificarPerfil, verificarToken } from "../middlewares/authMiddleware";
 
 const router = Router();
 
@@ -45,6 +46,6 @@ const router = Router();
  *         description: Erro interno do servidor.
  */
 
-router.get("/agencias", getAgencias);
+router.get("/agencias", verificarToken, verificarPerfil(['gerente']), getAgencias);
 
 export default router;
