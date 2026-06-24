@@ -13,7 +13,7 @@ lerna-debug.log*
 # Backend =================
 # =========================
 backend/node_modules/
-
+backend/.env
 
 # =========================
 # Frontend (Vite + React)

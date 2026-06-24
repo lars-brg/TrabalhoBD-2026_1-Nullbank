@@ -1,0 +1,51 @@
+### -----------------------------------------
+### TESTES DO INCREMENTO: CLIENTES (Atualizado)
+### -----------------------------------------
+
+### 1. Fazer Login para renovar o Token (Copie o novo token gerado)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "identificador": "Admin",
+  "senha": "Root"
+}
+
+
+### -----------------------------------------
+### TESTES DO INCREMENTO: CADASTROS COMPLEMENTARES
+### -----------------------------------------
+
+### 1. Vincular Telefone ao Cliente
+POST http://localhost:3000/api/clientes/telefone
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0MzIwNCwiZXhwIjoxNzgyMjcyMDA0fQ.i8-RH3Et9paav-TVnEFOOfL9SzzVpdIWSfNkdSTWuQs
+
+{
+  "cpf_cliente": "02096959438",
+  "numero": "88999991111",
+  "descricao": "Celular Principal"
+}
+
+### 2. Vincular Email ao Cliente
+POST http://localhost:3000/api/clientes/email
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0MzIwNCwiZXhwIjoxNzgyMjcyMDA0fQ.i8-RH3Et9paav-TVnEFOOfL9SzzVpdIWSfNkdSTWuQs
+
+{
+  "cpf_cliente": "02096959438",
+  "endereco_email": "maria.oliveira@email.com",
+  "descricao": "Pessoal"
+}
+
+### 3. Vincular Dependente ao Funcionário
+POST http://localhost:3000/api/funcionarios/dependente
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0MzIwNCwiZXhwIjoxNzgyMjcyMDA0fQ.i8-RH3Et9paav-TVnEFOOfL9SzzVpdIWSfNkdSTWuQs
+
+{
+  "matricula_func": 1,
+  "nome_completo": "Pedro Oliveira Ramos",
+  "parentesco": "filho_a",
+  "data_nascimento": "2018-08-25"
+}
