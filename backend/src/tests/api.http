@@ -11,29 +11,95 @@ Content-Type: application/json
   "senha": "Root"
 }
 
-### -----------------------------------------
-### TESTES DE PERFIL DE ACESSO (ATENDENTE)
-### -----------------------------------------
+### ---------------------------------------------------------------------
+### ATO 0: PREPARANDO OS ATORES (Acesso DBA)
+### ---------------------------------------------------------------------
 
-### 1. Criar o Funcionario ATENDENTE (Requer Token ADMIN)
-# Ajuste os campos se a sua tabela de funcionário exigir dados diferentes
-POST http://localhost:3000/api/funcionarios
+### 0.1 Login do DBA (A Chave Mestra)
+POST http://localhost:3000/api/auth/login
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluIiwicm9sZSI6IkRCQSIsImlhdCI6MTc4MjI0NTYyNiwiZXhwIjoxNzgyMjc0NDI2fQ.WV9vf3tuyqFtrpRyJbZshPBnhUNvUWYGfXRni6USOtU
 
 {
-  "cpf": "45644561305",
-  "nome_completo": "Lucas Atendente",
-  "cargo": "atendente",
-  "senha": "senhaAtendente123",
-  "salario": 2500.00,
-  "data_nascimento": "1998-02-10",
-  "data_admissao": "2026-06-23",
+  "identificador": "Admin",
+  "senha": "Root"
+}
+
+### 0.2 Criar o Gerente (Requer Token do DBA)
+# 🟢 AÇÃO: Cole o token do DBA e execute. 
+# 📝 ATENÇÃO: Anote a MATRÍCULA gerada para este gerente!
+POST http://localhost:3000/api/funcionarios
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjoiQWRtaW4iLCJjYXJnbyI6IkRCQSIsImlhdCI6MTc4MjI2NjQwOCwiZXhwIjoxNzgyMjk1MjA4fQ.bM0m-r5RSkzRofQi7ZNtiugZEWwyF6lbNaC93zBlvQg
+
+{
+  "cpf": "99988877766",
+  "nome_completo": "Marcos Gerente",
+  "cargo": "gerente",
+  "senha": "senhaDoGerente123",
+  "salario": 8500.00,
+  "data_nascimento": "1985-10-15",
+  "data_admissao": "2020-01-10",
   "id_endereco": 999,
   "num_ag": 5
 }
 
-### 2. Fazer Login como ATENDENTE para pegar o Token dele
+### -----------------------------------------
+### =====================================================================
+### 🧪 TESTE END-TO-END (E2E): RBAC COMPLETO E TRANSAÇÕES ACID
+### =====================================================================
+
+### ---------------------------------------------------------------------
+### ATO 1: O GERENTE (Preparando o Terreno)
+### ---------------------------------------------------------------------
+
+### 1.1 Login do Gerente (Matrícula 1)
+# 🟢 AÇÃO: Execute este bloco.
+# 📝 RESULTADO ESPERADO: 200 OK. Copie o token gerado para usar nos próximos passos.
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "identificador": "32",
+  "senha": "senhaDoGerente123" 
+}
+
+### 1.2 Gerente Criando a Conta A (Origem do Dinheiro)
+# 🟢 AÇÃO: Cole o token do Gerente e execute. Anote o ID (num_conta) gerado!
+# 📝 RESULTADO ESPERADO: 201 Created.
+POST http://localhost:3000/api/contas
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjozMiwiY2FyZ28iOiJnZXJlbnRlIiwiaWF0IjoxNzgyMjY2NDY2LCJleHAiOjE3ODIyOTUyNjZ9.CN8o-X_ltuY8CUDzQbChlqMqO-x7w_NtkJjOZ7sgw-I
+
+{
+  "num_ag": 5,
+  "matricula_gerente": 1,
+  "saldo": 5000.00,
+  "senha": "senhaContaA",
+  "tipo_conta": "conta_corrente"
+}
+
+### 1.3 Gerente Criando a Conta B (Destino do Dinheiro)
+# 🟢 AÇÃO: Com o mesmo token do Gerente, execute novamente. Anote o ID (num_conta) gerado!
+# 📝 RESULTADO ESPERADO: 201 Created.
+POST http://localhost:3000/api/contas
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjoiQWRtaW4iLCJjYXJnbyI6IkRCQSIsImlhdCI6MTc4MjI2NjQ5OSwiZXhwIjoxNzgyMjk1Mjk5fQ.vWTKJ-rsFB1YnD_VgiqOyj8nQg-NQTbbEZ1RE-UMii4
+
+{
+  "num_ag": 5,
+  "matricula_gerente": 1,
+  "saldo": 100.00,
+  "senha": "senhaContaB",
+  "tipo_conta": "poupanca"
+}
+
+### ---------------------------------------------------------------------
+### ATO 2: O ATENDENTE (Testando a Trava de Segurança)
+### ---------------------------------------------------------------------
+
+### 2.1 Login do Atendente (Matrícula 30 - Lucas)
+# 🟢 AÇÃO: Execute este bloco.
+# 📝 RESULTADO ESPERADO: 200 OK. Copie o token gerado para o próximo teste.
 POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
@@ -42,85 +108,31 @@ Content-Type: application/json
   "senha": "senhaAtendente123"
 }
 
-### 3. O Teste de Bloqueio: Atendente tentando ABRIR uma Conta
-# Copie o token que foi gerado no Passo 2 e cole aqui.
-# O resultado OBRIGATÓRIO deve ser o Erro 403 Forbidden.
-POST http://localhost:3000/api/contas
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjozMCwiY2FyZ28iOiJhdGVuZGVudGUiLCJpYXQiOjE3ODIyNjAzNTgsImV4cCI6MTc4MjI4OTE1OH0.hvP1QMlQ0QbjQ4wBdmzaPiHolY2jx1YjiZ7JaNzH0a4
-
-{
-  "num_ag": 5,
-  "matricula_gerente": 1,
-  "saldo": 100.00,
-  "senha": "senhaInvasao456",
-  "tipo_conta": "conta_corrente"
-}
-
-### -----------------------------------------
-### TESTES COMPLEMENTARES DE PERFIL (RBAC)
-### -----------------------------------------
-
-### 4. Teste da Rota Compartilhada: Atendente Listando Contas
-# Use o MESMO token do Lucas (Atendente) que deu erro 403 no teste anterior.
-# O resultado esperado é 200 OK e a lista de contas na tela!
+### 2.2 Atendente Consultando Contas (Caminho Feliz)
+# 🟢 AÇÃO: Cole o token do Atendente e execute.
+# 📝 RESULTADO ESPERADO: 200 OK. Ele deve conseguir ver a lista de contas.
 GET http://localhost:3000/api/contas
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjozMCwiY2FyZ28iOiJhdGVuZGVudGUiLCJpYXQiOjE3ODIyNjAzNTgsImV4cCI6MTc4MjI4OTE1OH0.hvP1QMlQ0QbjQ4wBdmzaPiHolY2jx1YjiZ7JaNzH0a4
-###
-POST http://localhost:3000/api/contas
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjozMCwiY2FyZ28iOiJhdGVuZGVudGUiLCJpYXQiOjE3ODIyNjY1MzksImV4cCI6MTc4MjI5NTMzOX0.v05djY0HA6VsxNDBq5HejZBAdHzsh7jVkSxRr-BUpDY
+
+### 2.3 Atendente Tentando Alterar uma Conta (O Teste de Fogo)
+# 🟢 AÇÃO: Cole o token do Atendente, mude o ID da conta na URL e execute.
+# 📝 RESULTADO ESPERADO: 403 Forbidden! O sistema DEVE bloquear a ação.
+PUT http://localhost:3000/api/contas/44
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjoiQWRtaW4iLCJjYXJnbyI6IkRCQSIsImlhdCI6MTc4MjI2MjU3MywiZXhwIjoxNzgyMjkxMzczfQ.O9i67dbF80Kz0IzL8Jkid9-7qy3szmYPBvwngmXazkc
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjozMCwiY2FyZ28iOiJhdGVuZGVudGUiLCJpYXQiOjE3ODIyNjY1MzksImV4cCI6MTc4MjI5NTMzOX0.v05djY0HA6VsxNDBq5HejZBAdHzsh7jVkSxRr-BUpDY
 
 {
-  "num_ag": 5,
   "matricula_gerente": 1,
-  "saldo": 200.00,
-  "senha": "senhaTemp123",
   "tipo_conta": "conta_corrente"
 }
-### -----------------------------------------
-### TESTES DE MANUTENÇÃO (PUT / DELETE)
-### -----------------------------------------
 
-### 1. Atualizar uma Conta Existente (Requer Token do Gerente)
-# Troque o "55" pelo número de uma conta que você já criou!
-PUT http://localhost:3000/api/contas/56
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjoiQWRtaW4iLCJjYXJnbyI6IkRCQSIsImlhdCI6MTc4MjI2MjgwNywiZXhwIjoxNzgyMjkxNjA3fQ.w_3YKxzUmR189-H-bj8tpfyErQMaQ1CtCqlD27SDL0M
+### ---------------------------------------------------------------------
+### ATO 3: O CAIXA (A Movimentação Financeira)
+### ---------------------------------------------------------------------
 
-{
-  "matricula_gerente": 1,
-  "tipo_conta": "poupanca"
-}
-
-### 2. Tentar Deletar uma Conta (Requer Token do Gerente)
-# Dica: Crie uma conta nova rapidinho só para testar o delete, 
-# para não apagar as contas que já configuramos com titularidade!
-DELETE http://localhost:3000/api/contas/56
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjoiQWRtaW4iLCJjYXJnbyI6IkRCQSIsImlhdCI6MTc4MjI2MjQ3NCwiZXhwIjoxNzgyMjkxMjc0fQ.CeOHBQ6Esk5sPUIuNvh1MfOAT6FEDB74wYlzxki-H70
-
-### -----------------------------------------
-### TESTES DO ITEM 8: TRANSAÇÃO ACID
-### -----------------------------------------
-
-### 1. Criar o Funcionario CAIXA (Requer Token ADMIN)
-POST http://localhost:3000/api/funcionarios
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjoiQWRtaW4iLCJjYXJnbyI6IkRCQSIsImlhdCI6MTc4MjI2NDEwOSwiZXhwIjoxNzgyMjkyOTA5fQ.4cxN2ZISNXx9Tv4SIwh0MjM3hL85SEUiIzZ1Fh50mK0
-
-{
-  "cpf": "11122233344",
-  "nome_completo": "Carlos Caixa",
-  "cargo": "caixa",
-  "senha": "senhaCaixa123",
-  "salario": 3000.00,
-  "data_nascimento": "1995-05-20",
-  "data_admissao": "2026-06-23",
-  "id_endereco": 999,
-  "num_ag": 5
-}
-
-### 2. Fazer Login como CAIXA (Anote a matrícula gerada no passo anterior, ex: 31)
+### 3.1 Login do Caixa (Aquele que criamos no teste do ACID)
+# 🟢 AÇÃO: Coloque a matrícula correta do Caixa e execute.
+# 📝 RESULTADO ESPERADO: 200 OK. Copie o token gerado.
 POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
@@ -129,14 +141,38 @@ Content-Type: application/json
   "senha": "senhaCaixa123"
 }
 
-### 3. Executar a Transferência (Requer Token do CAIXA)
-# Verifique no banco de dados duas contas válidas para substituir os IDs 55 e 57
+### 3.2 Caixa Tentando Excluir uma Conta (O Teste de Fogo Reverso)
+# 🟢 AÇÃO: Cole o token do Caixa e execute.
+# 📝 RESULTADO ESPERADO: 403 Forbidden! O Caixa cuida do dinheiro, mas não apaga contas.
+DELETE http://localhost:3000/api/contas/44
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjozMSwiY2FyZ28iOiJjYWl4YSIsImlhdCI6MTc4MjI2NjYzNywiZXhwIjoxNzgyMjk1NDM3fQ.LcJfqpD5ZIJTrlLEtRPlH8sPNtqJtM1gHaRKaO279tM
+
+### 3.3 Caixa Realizando a Transferência ACID
+# 🟢 AÇÃO: Cole o token do Caixa, ajuste os IDs de origem e destino, e execute!
+# 📝 RESULTADO ESPERADO: 200 OK. Transferência realizada com sucesso.
 POST http://localhost:3000/api/transacoes/transferencia
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjozMSwiY2FyZ28iOiJjYWl4YSIsImlhdCI6MTc4MjI2NDE4NiwiZXhwIjoxNzgyMjkyOTg2fQ._t99L9X8YkOD3Sp3hX4RfhbipPcTyNzjYfx8qReemSU
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWNhZG9yIjozMSwiY2FyZ28iOiJjYWl4YSIsImlhdCI6MTc4MjI2NjczMSwiZXhwIjoxNzgyMjk1NTMxfQ.RcDiJus31bCmFJ8-cd01BBS0MOXwVFy1Qf9WPSui-KQ
 
 {
-  "num_conta_origem": 55,
-  "num_conta_destino": 52,
+  "num_conta_origem": 44,
+  "num_conta_destino": 45,
+  "valor": 1500.00
+}
+
+### ---------------------------------------------------------------------
+### ATO 4: O GERENTE (A Última Barreira)
+### ---------------------------------------------------------------------
+
+### 4.1 Gerente Tentando Roubar Dinheiro (Teste de Isolamento)
+# 🟢 AÇÃO: Cole o Token do Gerente lá do Ato 1 e tente fazer uma transferência.
+# 📝 RESULTADO ESPERADO: 403 Forbidden! Gerente não mexe com o dinheiro dos clientes.
+POST http://localhost:3000/api/transacoes/transferencia
+Content-Type: application/json
+Authorization: Bearer COLE_O_TOKEN_DO_GERENTE_AQUI
+
+{
+  "num_conta_origem": COLOQUE_O_ID_DA_CONTA_A_AQUI,
+  "num_conta_destino": COLOQUE_O_ID_DA_CONTA_B_AQUI,
   "valor": 50.00
 }
