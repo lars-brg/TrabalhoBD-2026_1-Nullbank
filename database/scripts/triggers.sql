@@ -12,14 +12,15 @@ BEGIN
     WHERE num_ag = NEW.num_ag;
 END $$
 
-CREATE TRIGGER funcionario_demissao                     -- GATILHO DE DEMISSÃO (DELETE)
+CREATE TRIGGER funcionario_demissao                 -- GATILHO DE DEMISSÃO(DELETE)
 AFTER DELETE ON funcionario
 FOR EACH ROW
 BEGIN
     UPDATE agencia
     SET sal_total = sal_total - OLD.salario
     WHERE num_ag = OLD.num_ag;
-END $$
+END;
+
 CREATE TRIGGER funcionario_atualizacao                     -- GATILHO DE ATUALIZAÇÃO (UPDATE)
 AFTER UPDATE ON funcionario
 FOR EACH ROW
@@ -31,6 +32,7 @@ BEGIN
         UPDATE agencia SET sal_total = sal_total - OLD.salario + NEW.salario WHERE num_ag = NEW.num_ag;
     END IF;
 END $$
+
 CREATE TRIGGER trg_verificar_saldo                     -- GATILHO DE SALDO NEGATIVO NA CONTA
 BEFORE UPDATE ON conta
 FOR EACH ROW
@@ -54,7 +56,6 @@ BEGIN
 END $$
 
 DELIMITER ;
-
 
 -- ==========================================
 -- O cliente pode possuir várias contas, mas é restrito a, no máximo, uma conta por agência. 
@@ -317,3 +318,80 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+
+ -- _ Início da Alteração depois da entrega: _
+
+-- ==========================================
+-- GATILHO: Gerar num_transacao sequencial por conta
+-- ==========================================
+DELIMITER $$
+
+CREATE TRIGGER trg_auto_num_transacao
+BEFORE INSERT ON transacao
+FOR EACH ROW
+BEGIN
+    DECLARE v_proximo_num INT;
+
+    -- Pega o maior número de transação atual desta conta e soma 1
+    -- Se for a primeira transação (NULL), o IFNULL transforma em 0, resultando em 1
+    SELECT IFNULL(MAX(num_transacao), 0) + 1
+    INTO v_proximo_num
+    FROM transacao
+    WHERE num_conta = NEW.num_conta;
+
+    -- Atribui o valor calculado à nova linha antes dela ser salva
+    SET NEW.num_transacao = v_proximo_num;
+END $$
+
+DELIMITER ;
+
+-- ==========================================
+-- GATILHO: Limite de 5 dependentes por funcionário
+-- ==========================================
+DELIMITER $$
+
+CREATE TRIGGER trg_limite_dependentes
+BEFORE INSERT ON dependente
+FOR EACH ROW
+BEGIN
+    DECLARE qtd INT;
+
+    SELECT COUNT(*)
+    INTO qtd
+    FROM dependente
+    WHERE matricula_func = NEW.matricula_func;
+
+    IF qtd >= 5 THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Operação cancelada: Funcionário já possui o máximo de 5 dependentes.';
+    END IF;
+END $$
+
+DELIMITER ;
+
+-- ==========================================
+-- GATILHO: O gerente da conta deve pertencer à mesma agência da conta
+-- ==========================================
+DELIMITER $$
+
+CREATE TRIGGER trg_gerente_mesma_agencia
+BEFORE INSERT ON conta
+FOR EACH ROW
+BEGIN
+    DECLARE v_agencia_gerente INT;
+
+    SELECT num_ag
+    INTO v_agencia_gerente
+    FROM funcionario
+    WHERE matricula = NEW.matricula_gerente;
+
+    IF v_agencia_gerente <> NEW.num_ag THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Operação cancelada: O gerente deve pertencer à mesma agência da conta.';
+    END IF;
+END $$
+
+DELIMITER ;
+
+ -- _ Fim da Alteração depois da entrega: _

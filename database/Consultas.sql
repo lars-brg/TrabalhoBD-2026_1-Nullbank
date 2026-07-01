@@ -16,6 +16,16 @@
 -- podendo ser classificados por ordem alfabética de nomes ou de salários;
 -- ==========================================
 
+
+
+/*
+    Alteração depois da entrega:
+    _ _
+    OBSERVAÇÃO: Você pode escolher entre indicar o número da agência, o nome da agência ou os dois ao mesmo tempo,
+    mas caso indique um nome diferente do número da agência a consulta não retornará nada
+    _ _ 
+*/
+
 SELECT
     f.nome_completo,
     f.cargo,
@@ -707,3 +717,117 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+/*
+    _ Início da Alteração depois da entrega: _
+*/
+
+-- ==========================================
+-- GATILHO: Gerar num_transacao sequencial por conta
+-- ==========================================
+DELIMITER $$
+
+CREATE TRIGGER trg_auto_num_transacao
+BEFORE INSERT ON transacao
+FOR EACH ROW
+BEGIN
+    DECLARE v_proximo_num INT;
+
+    -- Pega o maior número de transação atual desta conta e soma 1
+    -- Se for a primeira transação (NULL), o IFNULL transforma em 0, resultando em 1
+    SELECT IFNULL(MAX(num_transacao), 0) + 1
+    INTO v_proximo_num
+    FROM transacao
+    WHERE num_conta = NEW.num_conta;
+
+    -- Atribui o valor calculado à nova linha antes dela ser salva
+    SET NEW.num_transacao = v_proximo_num;
+END $$
+
+DELIMITER ;
+
+-- ==========================================
+-- GATILHO: Limite de 5 dependentes por funcionário
+-- ==========================================
+DELIMITER $$
+
+CREATE TRIGGER trg_limite_dependentes
+BEFORE INSERT ON dependente
+FOR EACH ROW
+BEGIN
+    DECLARE qtd INT;
+
+    SELECT COUNT(*)
+    INTO qtd
+    FROM dependente
+    WHERE matricula_func = NEW.matricula_func;
+
+    IF qtd >= 5 THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Operação cancelada: Funcionário já possui o máximo de 5 dependentes.';
+    END IF;
+END $$
+
+DELIMITER ;
+
+-- ==========================================
+-- GATILHO: O gerente da conta deve pertencer à mesma agência da conta
+-- ==========================================
+DELIMITER $$
+
+CREATE TRIGGER trg_gerente_mesma_agencia
+BEFORE INSERT ON conta
+FOR EACH ROW
+BEGIN
+    DECLARE v_agencia_gerente INT;
+
+    SELECT num_ag
+    INTO v_agencia_gerente
+    FROM funcionario
+    WHERE matricula = NEW.matricula_gerente;
+
+    IF v_agencia_gerente <> NEW.num_ag THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Operação cancelada: O gerente deve pertencer à mesma agência da conta.';
+    END IF;
+END $$
+
+DELIMITER ;
+
+-- ==========================================
+-- STORED PROCEDURE: Transferência entre contas com segurança (Rollback)
+-- ==========================================
+DELIMITER $$
+
+CREATE PROCEDURE transferencia_contas(
+    IN p_conta_origem INT,
+    IN p_conta_destino INT,
+    IN p_valor DECIMAL(15,2)
+)
+BEGIN
+    -- Em caso de erro (ex: trigger de saldo insuficiente), desfaz tudo com Rollback
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+
+    -- Lança a transferência de saída (Débito) na conta de origem 
+    -- Passamos 0 para num_transacao porque o trigger trg_auto_num_transacao vai sobrescrever
+    INSERT INTO transacao (num_conta, num_transacao, tipo_transacao, valor)
+    VALUES (p_conta_origem, 0, 'transferencia', p_valor); 
+
+    -- Lança a transferência de depósito (Crédito) na conta de destino
+    INSERT INTO transacao (num_conta, num_transacao, tipo_transacao, valor)
+    VALUES (p_conta_destino, 0, 'deposito', p_valor);
+    
+    COMMIT;
+END $$
+
+DELIMITER ;
+
+/*
+    _ Fim da Alteração depois da entrega. _
+*/
